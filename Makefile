@@ -1,5 +1,5 @@
 CC = gcc
-FLAGS := -g -pthread -Wpedantic -Wall -pedantic-errors -std=c11
+FLAGS := -g -pthread -Wpedantic -Wall -std=c11
 OUT = main.out
 
 SRC = $(wildcard *.c)

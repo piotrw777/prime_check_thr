@@ -1,6 +1,8 @@
 #ifndef __HEADER
 #define __HEADER
 
+#include <pthread.h>
+
 #define false 0
 #define true 1
 
@@ -13,12 +15,15 @@ struct args {
     int thread_nr;      //który wątek w kolejności
     int start;          //od którego dzielnika startujemy
     int step;
-    int *w;             //tablica z id wątków do zamknięcia
+    pthread_t *w;             //tablica z id wątków do zamknięcia
 };
 
 
 typedef struct args args;
 
 bool is_prime_thr(ull n);
+ull pi(ull  n);
+ull next_prime_thr(ull n);
+ull next_prime(ull n);
 
 #endif // __HEADER
