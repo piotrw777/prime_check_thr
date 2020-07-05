@@ -6,8 +6,8 @@
 #include <unistd.h>
 #include "prime_check.h"
 
-#define M 2      //liczba wątków
-#define STEP 6  //krok
+#define M 4      //liczba wątków
+#define STEP 12  //krok
 
 long long suma_elem(int tab[], int rozmiar) {
     long long suma = 0;
@@ -36,14 +36,16 @@ void *threadFunction(void * arg) {
     int result = 0;
 
     for(ull k = start; k < max_d; k += step) {
-        //sleep(1);
+        sleep(1);
         //printf("Jestem wątkiem nr %d i sprawdzam dzielnik %llu\n", thread_nr, k);
         //mamy dzielnik - liczba jest złożona
         if(n % k == 0) {
-            //printf("\nKomunikat od wątku %d:  znaleziono dzielnik %llu\n", thread_nr, k);
+            //printf("\nKomunikat od wątku %d: Liczba %llu dzieli się przez %llu\n", thread_nr,n, k);
             result = -7777;
             //zamykamy wątki
-            pthread_cancel(w[1 - thread_nr]);
+            for(int j = 0; j < M; j++) {
+                if(j != k) pthread_cancel(w[j]);
+            }
             pthread_exit( (void *) result);
         }
     }   //end for
@@ -61,15 +63,14 @@ bool is_prime_thr(ull n) {
     if( n % 3 == 0) return false;
     if( n % 5 == 0) return false;
 
-
-
     pthread_t Threads[M]; //wątki
     int Results[M];       //wyniki zwracane przez wątki
+    int Ret[M];
     memset(Results, 0, M * sizeof(* Results) );
     args Args_thr[M];  //argumenty dla wątków
 
     int ret;
-    const int Start[M] = {5, 7};
+    const int Start[M] = {13,17,7,11};
     //wypełnienie tablicy argumentów dla wątków
     for(int k = 0; k < M; k++) {
         args pom = {n, (ull) sqrt(n) + 1, k, Start[k], STEP, Threads};
@@ -79,13 +80,12 @@ bool is_prime_thr(ull n) {
     //wyswietl(Results, M);
     //tworzenie wątków
     for(int k = 0; k < M; k++) {
-        ret = pthread_create(&Threads[k], NULL, &threadFunction, &Args_thr[k]);
-        if(ret != 0) {
+        Ret[M] = pthread_create(&Threads[k], NULL, &threadFunction, &Args_thr[k]);
+        if(Ret[M] != 0) {
             printf("Błąd wątku %d", k);
             exit(-1);
         }
     }
-
     //czekamy na wątki
     for(int k = 0; k < M; k++) {
         pthread_join(Threads[k], (void *) &Results[k]);
@@ -106,18 +106,26 @@ bool is_prime_thr(ull n) {
 }
 
 bool is_prime(ull n) {
-	if(n < 2) return 0;
-	if(n == 2) return 1;
-	//jeśli parzysta zwróć fałsz
-	if(n % 2 == 0) return 0;
+    if(n <= 1) return false;
+    if(n == 2 || n == 3 || n == 5) return true;
+    if( n % 2 == 0) return false;
+    if( n % 3 == 0) return false;
+    if( n % 5 == 0) return false;
 
 	ull k_max = (int) sqrt(n) + 1;
-	ull k = 3;
-	while(k < k_max) {
-		if((n % k) == 0) {
+	ull k1 = 11;
+    ull k2 = 7;
+	while( (k1 < k_max) && (k2 < k_max) ) {
+		if((n % k1) == 0) {
+            printf("\nLiczba %llu dzieli się przez %llu\n", n, k1);
 			return 0;
 		}
-		k += 2;
+		k1 += 6;
+		if((n % k2) == 0) {
+            printf("\nLiczba %llu dzieli się przez %llu\n", n, k2);
+			return 0;
+		}
+		k2 += 6;
 	}
 	return 1;
 }
